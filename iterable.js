@@ -42,6 +42,8 @@ const iterable = {
   },
 };
 let iterator = iterable[Symbol.iterator]();
+// [Symbol.iterator]() {
+//   console.log('this:', this);
 //TypeError: iterator is not iterable
 iterator.next();
 iterator.next();
