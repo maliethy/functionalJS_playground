@@ -1,10 +1,11 @@
-const jsdom = require('jsdom');
+const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 //내장 iterable 객체 Array, Set, Map 이터러블/이터레이터 프로토콜을 따르는 for...of를 통해 값을 순회함
 const log = console.log;
 // log('Arr -----------');
-// const arr = [1, 2, 3];
-// let iter1 = arr[Symbol.iterator]();
+// const arr = [1, 2, 3];//arr=이터러블
+//arr에 Symbol.iterator이라는 키로 접근하면 함수 f values() { [native code] }가 있다.
+// let iter1 = arr[Symbol.iterator]();//Symbol.iterator method를 실행하면 iterator를 리턴한다. 이터레이터는 next()라는 매소드를 사용해 { value, done } 객체를 리턴한다
 // for (const a of iter1) log(a);
 // log('Set -----------');
 // const set = new Set([1, 2, 3]);
@@ -31,7 +32,7 @@ const iterable = {
         return i == 0 ? { done: true } : { value: i--, done: false };
       },
       [Symbol.iterator]() {
-        console.log('this:', this);
+        console.log("this:", this);
         // this: {
         //     next: [Function: next],
         //     [Symbol(Symbol.iterator)]: [Function: [Symbol.iterator]]

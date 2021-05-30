@@ -102,10 +102,11 @@
         if (a instanceof Promise) {
           return a
             .then((a) => ((res.push(a), res).length == l ? res : recur()))
-            .catch((e) =>
-              e == nop
-                ? recur() //nop일 때 다음 값으로 넘어가고
-                : Promise.reject(e)
+            .catch(
+              (e) =>
+                e == nop
+                  ? recur() //nop일 때 다음 값으로 넘어가고
+                  : Promise.reject(e)
               //nop이 아닌 에러라면 에러를 reject함
             );
         }
@@ -117,7 +118,7 @@
   });
 </script>
 
-<!-- ## reduce에서 nop 지원
+## reduce에서 nop 지원
 
 <script>
   go(
@@ -144,4 +145,4 @@
     reduce(add)
     // log
   );
-</script> -->
+</script>

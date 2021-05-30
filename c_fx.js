@@ -7,14 +7,8 @@ const curry =
 
 const isIterable = (a) => a && a[Symbol.iterator];
 
-const go1 = (a, f) => {
-  if (a instanceof Promise) {
-    // log("a:", a.then(f));
-    return a.then(f);
-  } else {
-    return f(a);
-  }
-};
+const go1 = (a, f) => (a instanceof Promise ? a.then(f) : f(a));
+
 const reduceF = (acc, a, f) =>
   a instanceof Promise
     ? a.then(
@@ -23,11 +17,7 @@ const reduceF = (acc, a, f) =>
       )
     : f(acc, a);
 
-const head = (iter) =>
-  go1(take(1, iter), ([h]) => {
-    log("h:", h);
-    h;
-  });
+const head = (iter) => go1(take(1, iter), ([h]) => h);
 
 const reduce = curry((f, acc, iter) => {
   if (!iter) return reduce(f, head((iter = acc[Symbol.iterator]())), iter);
@@ -89,13 +79,9 @@ const nop = Symbol("nop");
 L.filter = curry(function* (f, iter) {
   for (const a of iter) {
     const b = go1(a, f);
-
-    if (b instanceof Promise) {
-      //   log("b:", b);
-      yield b.then((b) => {
-        b ? a : Promise.reject(nop);
-      });
-    } else if (b) yield a;
+    if (b instanceof Promise)
+      yield b.then((b) => (b ? a : Promise.reject(nop)));
+    else if (b) yield a;
   }
 });
 
@@ -139,3 +125,23 @@ const range = (l) => {
   }
   return res;
 };
+
+const C = {};
+
+function noop() {}
+
+const catchNoop = ([...arr]) => (
+  arr.forEach((a) => (a instanceof Promise ? a.catch(noop) : a)), arr
+);
+
+C.reduce = curry((f, acc, iter) =>
+  iter ? reduce(f, acc, catchNoop(iter)) : reduce(f, catchNoop(acc))
+);
+
+C.take = curry((l, iter) => take(l, catchNoop(iter)));
+
+C.takeAll = C.take(Infinity);
+
+C.map = curry(pipe(L.map, C.takeAll));
+
+C.filter = curry(pipe(L.filter, C.takeAll));

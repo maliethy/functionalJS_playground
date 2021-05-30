@@ -6,9 +6,11 @@ const curry =
     _.length ? f(a, ..._) : (..._) => f(a, ..._);
 
 const reduce = curry((f, acc, iter) => {
+  //iter는 data list이다
   if (!iter) {
+    //시작하는 값을 주지 않았을 때
     iter = acc[Symbol.iterator]();
-    acc = iter.next().value;
+    acc = iter.next().value; //첫번째 값을 초기값 acc에 넣는다
   } else {
     iter = iter[Symbol.iterator]();
   }
