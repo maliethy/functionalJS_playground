@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <title>Lisp</title>
+    <script src="./fx.js"></script>
+  </head>
+  <body>
+    1. 객체를 제너레이터를 이용해서 이터러블화 시켜 이터러블 프로그래밍 하기
+    <br />
+    <script>
+      const obj = {
+        a: 1,
+        b: 2,
+        c: 3,
+        d: 4,
+      };
+      _.go(
+        obj,
+        L.entries,
+        L.filter(([_, v]) => v % 2),
+        _.each(console.log)
+      );
+      console.clear();
+    </script>
+    2. 어떠한 값이든 이터러블 프로그래밍으로 다루기<br />
+    <script>
+      const a = [
+        ["a", "AA"],
+        ["c", "CC"],
+        ["d", "DD"],
+      ];
+      const object1 = (entries) =>
+        _.go(
+          entries,
+          _.map(([k, v]) => {
+            console.log([k]);
+            return { [k]: v };
+          }),
+          _.reduce(Object.assign)
+        );
+      //   const object2 = (entries) =>
+      //     _.reduce(
+      //       (obj, [k, v]) => {
+      //         console.log(obj);
+      //         obj[k] = v;
+      //         return obj;
+      //       },
+      //       {},
+      //       entries
+      //     );
+      const object2 = (entries) =>
+        _.reduce((obj, [k, v]) => ((obj[k] = v), obj), {}, entries);
+      //   console.log(object1(a));
+      console.log(object2(a));
+    </script>
+  </body>
+</html>
