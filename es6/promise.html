@@ -1,0 +1,148 @@
+<script src="./p_fx.js"></script>
+
+## 지연 평가 + Promise - L.map, map, take
+
+<script>
+  /*  go(
+      [1, 2, 3],
+      L.map(a => Promise.resolve(a + 10)),
+      take(2),
+      log);
+
+    go(
+      [Promise.resolve(1), Promise.resolve(2), Promise.resolve(3)],
+      L.map(a => a + 10),
+      take(2),
+      log);
+
+    go(
+      [Promise.resolve(1), Promise.resolve(2), Promise.resolve(3)],
+      L.map(a => Promise.resolve(a + 10)),
+      take(2),
+      log);
+
+    go(
+      [1, 2, 3],
+      map(a => Promise.resolve(a + 10)),
+      log);
+
+    go(
+      [Promise.resolve(1), Promise.resolve(2), Promise.resolve(3)],
+      map(a => a + 10),
+      log);
+
+    go(
+      [Promise.resolve(1), Promise.resolve(2), Promise.resolve(3)],
+      map(a => Promise.resolve(a + 10)),
+      log);*/
+</script>
+
+## Kleisli Composition - L.filter, filter, nop, take
+
+<script>
+  go(
+    [1, 2, 3, 4, 5, 6],
+    L.map((a) => Promise.resolve(a * a)),
+    // L.map(a => a * a),
+    filter((a) => Promise.resolve(a % 2)),
+    // L.map(a => a * a),
+    /*L.map(a => {
+      log(a);
+      return a * a;
+    }),
+    L.map(a => {
+      log(a);
+      return a * a;
+    }),
+    */
+    // take(4),
+    log
+  );
+  go(
+    [1, 2, 3, 4, 5, 6],
+    L.map((a) => Promise.resolve(a * a)),
+
+    filter((a) => Promise.resolve(a % 2)),
+    take(4),
+    log
+  );
+  const nop = Symbol("nop");
+
+  const go1 = (a, f) => {
+    if (a instanceof Promise) {
+      // log("a:", a.then(f));
+      return a.then(f);
+    } else {
+      return f(a);
+    }
+  };
+  L.filter = curry(function* (f, iter) {
+    for (const a of iter) {
+      //a는 map의 결과값
+      //   a = Promise.resolve(a * a)
+      const b = go1(a, f);
+      //b는 filter의 f로 인해 a에 다시 promise를 적용한 값
+      //b=  Promise.resolve(a % 2)
+      if (b instanceof Promise) {
+        yield b.then((b) => {
+          b ? a : Promise.reject(nop);
+          //b = 1일 때(홀수일 때) a이고, b=0일 때(짝수일 때) Promise.reject(nop)실행
+        });
+      } else if (b) yield a;
+    }
+  });
+
+  const take = curry((l, iter) => {
+    let res = [];
+    iter = iter[Symbol.iterator]();
+    return (function recur() {
+      let cur;
+      while (!(cur = iter.next()).done) {
+        const a = cur.value;
+        if (a instanceof Promise) {
+          return a
+            .then((a) => ((res.push(a), res).length == l ? res : recur()))
+            .catch(
+              (e) =>
+                e == nop
+                  ? recur() //nop일 때 다음 값으로 넘어가고
+                  : Promise.reject(e)
+              //nop이 아닌 에러라면 에러를 reject함
+            );
+        }
+        res.push(a);
+        if (res.length == l) return res;
+      }
+      return res;
+    })();
+  });
+</script>
+
+## reduce에서 nop 지원
+
+<script>
+  go(
+    [1, 2, 3, 4, 5],
+    L.map((a) => Promise.resolve(a * a)),
+    L.filter((a) => Promise.resolve(a % 2)),
+    reduce(add) /*,
+    log*/
+  );
+</script>
+
+<script>
+  go(
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    L.map((a) => {
+      //   log(a);
+      return new Promise((resolve) => setTimeout(() => resolve(a * a), 1000));
+    }),
+    L.filter((a) => {
+      //   log(a);
+      return new Promise((resolve) => setTimeout(() => resolve(a % 2), 1000));
+    }),
+    take(2),
+    reduce(add)
+    // log
+  );
+</script>

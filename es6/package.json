@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "jsdom": "^16.6.0"
+  },
+  "name": "functional_js",
+  "version": "1.0.0",
+  "main": "iterator.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maliethy/functional_js_playground.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maliethy/functional_js_playground/issues"
+  },
+  "homepage": "https://github.com/maliethy/functional_js_playground#readme",
+  "description": ""
+}

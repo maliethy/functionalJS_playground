@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <title>Lisp</title>
+    <script src="./fx.js"></script>
+  </head>
+  <body>
+    1. 객체를 제너레이터를 이용해서 이터러블화 시켜 이터러블 프로그래밍 하기
+    <br />
+    <script>
+      const obj = {
+        a: 1,
+        b: 2,
+        c: 3,
+        d: 4,
+      };
+      _.go(
+        obj,
+        L.entries,
+        L.filter(([_, v]) => v % 2),
+        _.each(console.log)
+      );
+      console.clear();
+    </script>
+    2. 어떠한 값이든 이터러블 프로그래밍으로 다루기<br />
+    <script>
+      const a = [
+        ["a", "AA"],
+        ["c", "CC"],
+        ["d", "DD"],
+      ];
+      const object1 = (entries) =>
+        _.go(
+          entries,
+          _.map(([k, v]) => {
+            console.log([k]);
+            return { [k]: v };
+          }),
+          _.reduce(Object.assign)
+        );
+      const object2 = (entries) =>
+        _.reduce(
+          (obj, [k, v]) => {
+            console.log(obj);
+            obj[k] = v;
+            return obj;
+          },
+          { c: 89 },
+          entries
+        );
+      // const object2 = (entries) =>
+      //   _.reduce((obj, [k, v]) => ((obj[k] = v), obj), {}, entries);
+      // console.log(object1(a));
+      console.log(object2(a));
+    </script>
+    <br />3. 이터러블(리스트)로 할 일들 작업하기
+    <script>
+      console.clear();
+      const track = [
+        { cars: ["철수", "영희", "철희", "영수"] },
+        { cars: ["하든", "커리", "듀란트", "탐슨"] },
+        { cars: ["폴", "어빙", "릴라드", "맥컬럼"] },
+        { cars: ["스파이더맨", "아이언맨"] },
+        { cars: [] },
+      ];
+      _.go(
+        L.range(Infinity),
+        L.map((i) => track[i]),
+        L.map(({ cars }) => {
+          console.log(cars);
+        })
+        // L.map(({ cars: { length: total } }) => {
+        //   console.log(total);
+        // }),
+        // _.each(console.log)
+      );
+    </script>
+    <br />
+    4. 아임포트 결제 누락 스케쥴러 만들기
+
+    <script>
+      const Impt = {
+        payments: {
+          1: [
+            { imp_id: 11, order_id: 1, amount: 15000 },
+            { imp_id: 12, order_id: 2, amount: 25000 },
+            { imp_id: 13, order_id: 3, amount: 10000 },
+          ],
+          2: [
+            { imp_id: 14, order_id: 4, amount: 25000 },
+            { imp_id: 15, order_id: 5, amount: 45000 },
+            { imp_id: 16, order_id: 6, amount: 15000 },
+          ],
+          3: [
+            { imp_id: 17, order_id: 7, amount: 20000 },
+            { imp_id: 18, order_id: 8, amount: 30000 },
+          ],
+          4: [],
+          5: [],
+          //...
+        },
+        getPayments: (page) => {
+          console.log(`http://..?page=${page}`);
+          return _.delay(1000 * 1, Impt.payments[page]);
+        },
+        cancelPayment: (imp_id) => Promise.resolve(`${imp_id}: 취소완료`),
+      };
+
+      const DB = {
+        getOrders: (ids) => _.delay(100, [{ id: 1 }, { id: 3 }, { id: 7 }]),
+      };
+
+      async function job() {
+        // 결제된 결제모듈측 payments 가져온다.
+        // page 단위로 가져오는데,
+        // 결제 데이터가 있을 때까지 모두 가져와서 하나로 합친다.
+        const payments = _.go(
+          L.range(1, Infinity),
+          L.map(Impt.getPayments),
+          L.takeUntil(({ length }) => length < 3),
+          _.flat
+        );
+        console.log(payments);
+        // 결제가 실제로 완료된 가맹점 측 주문서 id들을 뽑는다.
+        const order_ids = await _.go(
+          payments,
+          _.map((p) => p.order_id),
+          DB.getOrders,
+          _.map(({ id }) => id)
+        );
+
+        // 결제모듈의 payments와 가맹점의 주문서를 비교해서
+        // 결제를 취소해야할 id들을 뽑아서
+        // 결제 취소 api를 실행
+        _.go(
+          payments,
+          L.reject((p) => order_ids.includes(p.order_id)),
+          L.map((p) => p.imp_id),
+          L.map(Impt.cancelPayment),
+          // console.log
+          _.each(console.log)
+        );
+      }
+
+      job();
+    </script>
+  </body>
+</html>
