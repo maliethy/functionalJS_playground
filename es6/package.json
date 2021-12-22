@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "jsdom": "^16.6.0"
+    "jsdom": "^16.6.0",
+    "underscore": "^1.13.1"
   },
   "name": "functional_js",
   "version": "1.0.0",
